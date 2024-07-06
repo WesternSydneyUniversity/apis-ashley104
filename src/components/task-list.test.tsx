@@ -73,12 +73,12 @@ describe("Task List", function () {
     } as Any);
     server.use(trpcMsw.tasks.tasks.query(() => caller.tasks.tasks()));
     server.use(
-      trpcMsw.tasks.changeTask.mutation((input) =>
-        caller.tasks.changeTask(input)
+      trpcMsw.tasks.toggleTaskCompletion.mutation((input) =>
+        caller.tasks.toggleTaskCompletion(input)
       )
     );
     server.use(
-      trpcMsw.tasks.addTask.mutation((input) => caller.tasks.addTask(input))
+      trpcMsw.tasks.createTask.mutation((input) => caller.tasks.createTask(input))
     );
     server.use(
       trpcMsw.tasks.deleteTask.mutation((input) =>
