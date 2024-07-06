@@ -1,20 +1,46 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { db } from "~/server/db";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+
 
 export const tasksRouter = createTRPCRouter({
-  tasks: publicProcedure.query(async ({ ctx, input }) => {
-    const tasks = await db.task.findMany();
-    return tasks;
+  tasks: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.task.findMany({
+      where: { userId: ctx.session.user.id }
+    });
   }),
-  addTask: publicProcedure
+  createTask: protectedProcedure
     .input(z.object({ task: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // TODO
+      const newTask = await ctx.db.task.create({
+        data: {
+          userId: ctx.session.user.id,
+          description: input.task,
+          completed: false
+        }
+      });
+      return newTask;
     }),
-  toggleTaskCompletion: publicProcedure
-    // .input(/* TODO */)
+
+  deleteTask: protectedProcedure
+    .input(z.object({ taskId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      // TODO
+      await ctx.db.task.delete({
+        where: { id: input.taskId }
+      });
+    }),
+  toggleTaskCompletion: protectedProcedure
+    .input(z.object({ taskId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const task = await ctx.db.task.findUnique({
+        where: { id: input.taskId }
+      });
+      if (!task) {
+        throw new Error("Task not found");
+      }
+      const updatedTask = await ctx.db.task.update({
+        where: { id: input.taskId },
+        data: { completed: !task.completed }
+      });
+      return updatedTask;
     })
 });

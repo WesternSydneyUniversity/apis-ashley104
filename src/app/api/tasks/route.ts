@@ -24,23 +24,32 @@ async function listTasks(req: NextRequest, res: NextResponse) {
 }
 
 async function addTask(req: NextRequest, res: NextResponse) {
+  const session = await getServerAuthSession();
+  if (session == null) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
   const { description, completed = false } = await req.json();
   const newTask = {
     id: tasks.length + 1,
     description,
     completed,
-    userId: "1"
+    userId: session.user.id
   };
   tasks.push(newTask);
   return NextResponse.json(newTask, { status: 201 });
 }
 
 async function updateTask(req: NextRequest) {
+  const session = await getServerAuthSession();
+  if (session == null) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   const { id, description, completed } = await req.json();
   const taskIndex = tasks.findIndex((task) => task.id === id);
 
   if (taskIndex !== -1) {
-    tasks[taskIndex] = { id, description, completed, userId: "1" };
+    tasks[taskIndex] = { id, description, completed, userId: session.user.id };
     return NextResponse.json(tasks[taskIndex]);
   }
 
@@ -48,6 +57,10 @@ async function updateTask(req: NextRequest) {
 }
 
 async function deleteTask(req: NextRequest) {
+  const session = await getServerAuthSession();
+  if (session == null) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
   const { id } = await req.json();
   const taskIndex = tasks.findIndex((task) => task.id === id);
 

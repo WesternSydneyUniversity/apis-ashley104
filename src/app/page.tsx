@@ -3,6 +3,7 @@ import styles from "./index.module.css";
 
 import { Stick_No_Bills } from "next/font/google";
 import { UserInfo } from "~/components/user-info";
+import { Suspense } from "react";
 
 const sticks = Stick_No_Bills({ subsets: ["latin"] });
 
@@ -21,7 +22,9 @@ export default async function Home() {
             The easiest way to control your time!
           </h2>
         </header>
-        <TaskList />
+        <Suspense fallback={<div>Loading posts...</div>}>
+          <TaskList />
+        </Suspense>
       </div>
     </main>
   );

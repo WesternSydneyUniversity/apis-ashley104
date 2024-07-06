@@ -30,7 +30,8 @@ model Account {
     session_state     String?
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@unique([provider, providerAccountId])
+@@unique([provider, providerAccountId])
+
 }
 
 model Session {
@@ -49,6 +50,7 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
+    tasks         Task[]
 }
 
 model VerificationToken {
@@ -57,4 +59,18 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+enum Status {
+    COMPLETED
+    ACTIVE
+}
+model Task {
+    id          Int      @id @default(autoincrement())
+    description String
+    completed   Boolean
+    userId      String
+    user        User     @relation(fields: [userId], references: [id])
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 }
